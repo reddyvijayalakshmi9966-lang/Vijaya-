@@ -1,0 +1,117 @@
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+stored_fingerprint = "ABC123FP"
+
+html_code = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SecurePay - Fingerprint Payment</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #2c5364);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: white;
+            width: 350px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h2 {
+            color: #2c5364;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 95%;
+            padding: 12px;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="icon">🔐</div>
+    <h2>SecurePay</h2>
+    <form method="POST">
+        <input type="text" name="fingerprint" placeholder="Enter Fingerprint ID" required>
+        <input type="number" name="amount" placeholder="Enter Amount (₹)" required>
+        <button type="submit">Authenticate & Pay</button>
+    </form>
+
+    {% if message %}
+        <div class="message {{ status }}">{{ message }}</div>
+    {% endif %}
+</div>
+
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    message = ""
+    status = ""
+    if request.method == "POST":
+        fingerprint = request.form["fingerprint"]
+        amount = request.form["amount"]
+
+        if fingerprint == stored_fingerprint:
+            message = f"✅ Payment of ₹{amount} Successful!"
+            status = "success"
+        else:
+            message = "❌ Authentication Failed!"
+            status = "error"
+
+    return render_template_string(html_code, message=message, status=status)
+
+if __name__ == "__main__":
+    app.run(debug=True)
